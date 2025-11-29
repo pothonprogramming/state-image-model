@@ -21,6 +21,6 @@ dataLength: Used by the typed view to access the last data element relative to t
 Optional properties
 
 dataType:   Used to determine which typed view to use if type is not inferred from id
-dataUnit:   The size of the particular type in bytes used for buffer resizing
+dataStride: The size of a single data entry in bytes, including any padding
 parentId:   Used to build relationships between metadata entries
 dataCount:  Used to determine how many data elements are actively being used (for data pools)
