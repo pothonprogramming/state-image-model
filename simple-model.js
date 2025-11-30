@@ -10,8 +10,9 @@ const SimpleModel = (() => {
     // Metadata entries will be accessed directly by index using this map.
     // Could use an enum in C
     const map = {
-        particlePositions:0,
-        particleLifetimes:1
+        header:0,
+        particleLifetimes:1,
+        particlePositions:2
     };
 
     const buffer = new ArrayBuffer(1024);
@@ -19,14 +20,16 @@ const SimpleModel = (() => {
     const u8View = new Uint8Array(buffer);
     const u32View = new Uint32Array(buffer);
 
-    // The header only tracks the number of metadata entries and it only takes up one uint32 slot.
-    u32View[0] = 2;
+    // The header itself is a metadata entry that describes the metadata segment
+    // It should consume the same number of elements as any metadata entry.
+    // This simplifies the indexing arithmetic.
+    u32View[0] = 3; // metadata offset or metadata entry length
+    u32View[1] = 3; // number of metadata entries including the header entry
+    // u32View[2] = 0; // unused
 
-    function getEntryOffset(entryIndex) {
-        const headerLength = 1;
-        const entryLength = 3;
-        return headerLength + entryIndex * entryLength;
-    }
+    setEntry(u32View, map.particleLifetimes, 1, 10, 0);
+    setEntry(u32View, map.particlePositions, 4, 10, 0);
+    calculateDataOffsets(u32View);
 
     // * Each metadata entry has 3 properties:
     // dataOffset - The offset of the data in typed units
@@ -36,46 +39,49 @@ const SimpleModel = (() => {
     // dataTypeSize is set temporarily to track the size of each data element in bytes.
     // dataTypeSize will be used to calculate the data offset.
     function setEntry(u32View, entryIndex, dataTypeSize, dataLength, dataCount) {
-        const entriesLength = u32View[0]; // The number of entries allowed in the buffer.
-        if (entryIndex >= entriesLength) return;
-        const entryLength = 3; // The length of any entry or the number of elements per entry.
-        const headerLength = 1; // The length of the header.
-        let writeOffset = headerLength + entryIndex * entryLength; // The write offset of the entry.
-        u32View[writeOffset ++] = dataTypeSize;
-        u32View[writeOffset ++] = dataLength;
-        u32View[writeOffset ++] = dataCount;
+        const entriesLength = u32View[1]; // The number of entries allowed in the buffer.
+        if (entryIndex >= entriesLength) return; // Do not allow writing to indices that are out of range.
+        const entryLength = u32View[0]; // The length of any entry or the number of elements per entry.
+        let writeOffset = entryIndex * entryLength; // The write offset of the entry.
+        u32View[writeOffset]     = dataTypeSize;
+        u32View[writeOffset + 1] = dataLength;
+        u32View[writeOffset + 2] = dataCount;
     }
 
     function calculateDataOffsets(u32View) {
-        const entriesLength = u32View[0]; // The number of entries to process.
-        const entryLength = 3; // The number of elements per entry.
-        const headerLength = 1; // The length of the header.
-        let entryIndex = 0;
-        let dataByteOffset = (headerLength + entriesLength * entryLength) * 4; // The first possible data offset in bytes
+        const entryLength = u32View[0]; // The number of elements per entry.
+        const entriesLength = u32View[1]; // The number of entries to process.
+        let entryIndex = 1; // The first non-header entry
+        let dataByteOffset = entryLength * entriesLength * 4; // The first possible data offset in bytes
         while(entryIndex < entriesLength) {
-            const entryOffset = headerLength + entryIndex * entryLength;
+            const entryOffset = entryIndex * entryLength;
             const dataTypeSize = u32View[entryOffset];
             const dataLength = u32View[entryOffset + 1];
             const dataOffset = Math.ceil(dataByteOffset / dataTypeSize);
             u32View[entryOffset] = dataOffset;
-            dataByteOffset = dataOffset + dataLength * dataTypeSize;
+            dataByteOffset = (dataOffset + dataLength) * dataTypeSize;
             entryIndex ++;
         }
     }
 
-    setEntry(u32View, map.particleLifetimes, 1, 10, 0);
-    setEntry(u32View, map.particlePositions, 4, 10, 0);
-    calculateDataOffsets(u32View);
-
-    function populateParticles(map, u32View, u8View, f32View, count) {
-        const lifetimeOffset = u32View[getEntryOffset(map.particleLifetimes)];
-        const positionOffset = u32View[getEntryOffset(map.particlePositions)];
-
-        
+    function getDataOffset(u32View, entryIndex) {
+        const entryLength = u32View[0];
+        return u32View[entryIndex * entryLength];
     }
 
+    function getDataLength(u32View, entryIndex) {
+        const entryLength = u32View[0];
+        return u32View[entryIndex * entryLength + 1];
+    }
 
+    function populateParticles(map, u32View, u8View, f32View, count) {
+        const entryLength = u32View[0];
+        const lifetimeOffset = u32View[map.particleLifetimes * entryLength];
+        const positionOffset = u32View[map.particlePositions * entryLength];
+    }
 
-    console.log(f32View[u32View[getEntryOffset(map.particleLifetimes)]]);
+    console.log(u32View.slice(0, u32View[0] * u32View[1]));
+    console.log(u8View.slice(getDataOffset(u32View, map.particleLifetimes), getDataLength(u32View, map.particleLifetimes)));
+    console.log(f32View.slice(getDataOffset(u32View, map.particlePositions), getDataLength(u32View, map.particlePositions)));
 
 })();

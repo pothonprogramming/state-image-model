@@ -14,13 +14,13 @@ The buffer structure might look like this: Header | Metadata | Data
 
 A basic metadata entry might look like this:
 
-id:         Used to find and identify the metadata entry and optionally infer type
 dataOffset: Used by the typed view to access the first data element
 dataLength: Used by the typed view to access the last data element relative to the dataOffset
 
 Optional properties
 
-dataType:   Used to determine which typed view to use if type is not inferred from id
-dataStride: The size of a single data entry in bytes, including any padding
+id:         Used to find and identify the metadata entry and optionally infer type
 parentId:   Used to build relationships between metadata entries
+dataType:   Used to determine which typed view to use for data access if type is not inferred from id
+dataStride: The size of a single data entry in bytes, including any padding
 dataCount:  Used to determine how many data elements are actively being used (for data pools)
