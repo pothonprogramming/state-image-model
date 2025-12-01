@@ -5,7 +5,7 @@ in the form of a contiguous array buffer that can be used at runtime as well as 
 to a binary file for later use.
 
 Using a byte buffer is a simple way to represent memory in most programming languages. 
-The buffer must have a small header, a metadata segment, and a data segment to facilitate access.
+The buffer may have a small header, a metadata segment, and a data segment.
 Accessing data requires use of the metadata, so there is some overhead with this approach.
 Different array views may be used to read different types of data.
 For simplicity, all metadata properties may be stored as Uint32 values.

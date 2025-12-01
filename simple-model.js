@@ -10,9 +10,9 @@ const SimpleModel = (() => {
     // Metadata entries will be accessed directly by index using this map.
     // Could use an enum in C
     const map = {
-        header:0,
-        particleLifetimes:1,
-        particlePositions:2
+        header: 0,
+        particleLifetimes: 1,
+        particlePositions: 2
     };
 
     const buffer = new ArrayBuffer(1024);
@@ -43,7 +43,7 @@ const SimpleModel = (() => {
         if (entryIndex >= entriesLength) return; // Do not allow writing to indices that are out of range.
         const entryLength = u32View[0]; // The length of any entry or the number of elements per entry.
         let writeOffset = entryIndex * entryLength; // The write offset of the entry.
-        u32View[writeOffset]     = dataTypeSize;
+        u32View[writeOffset] = dataTypeSize;
         u32View[writeOffset + 1] = dataLength;
         u32View[writeOffset + 2] = dataCount;
     }
@@ -53,14 +53,14 @@ const SimpleModel = (() => {
         const entriesLength = u32View[1]; // The number of entries to process.
         let entryIndex = 1; // The first non-header entry
         let dataByteOffset = entryLength * entriesLength * 4; // The first possible data offset in bytes
-        while(entryIndex < entriesLength) {
+        while (entryIndex < entriesLength) {
             const entryOffset = entryIndex * entryLength;
             const dataTypeSize = u32View[entryOffset];
             const dataLength = u32View[entryOffset + 1];
             const dataOffset = Math.ceil(dataByteOffset / dataTypeSize);
             u32View[entryOffset] = dataOffset;
             dataByteOffset = (dataOffset + dataLength) * dataTypeSize;
-            entryIndex ++;
+            entryIndex++;
         }
     }
 
@@ -76,12 +76,24 @@ const SimpleModel = (() => {
 
     function populateParticles(map, u32View, u8View, f32View, count) {
         const entryLength = u32View[0];
-        const lifetimeOffset = u32View[map.particleLifetimes * entryLength];
-        const positionOffset = u32View[map.particlePositions * entryLength];
+        const particleLifetimesMetaOffset = map.particleLifetimes * entryLength;
+        const particlePositionsMetaOffset = map.particlePositions * entryLength;
+        const particleLifetimesDataOffset = u32View[particleLifetimesMetaOffset];
+        const particlePositionsDataOffset = u32View[particlePositionsMetaOffset];
+
+        for (let index = 0; index < count; index++) {
+            f32View[particlePositionsDataOffset + index] = Number(Math.random() * 10).toFixed(2);
+            u8View[particleLifetimesDataOffset + index] = Math.floor(Math.random() * 255);
+            u32View[particleLifetimesMetaOffset + 2] ++;
+            u32View[particlePositionsMetaOffset + 2] ++;
+        }
     }
 
+    populateParticles(map, u32View, u8View, f32View, 10);
+
     console.log(u32View.slice(0, u32View[0] * u32View[1]));
-    console.log(u8View.slice(getDataOffset(u32View, map.particleLifetimes), getDataLength(u32View, map.particleLifetimes)));
-    console.log(f32View.slice(getDataOffset(u32View, map.particlePositions), getDataLength(u32View, map.particlePositions)));
+    const particleLifetimesOffset = map.particleLifetimes * u32View[0];
+    console.log(u8View.slice(u32View[particleLifetimesOffset], u32View[particleLifetimesOffset] + u32View[particleLifetimesOffset + 1]));
+    console.log(f32View.slice(getDataOffset(u32View, map.particlePositions), getDataOffset(u32View, map.particlePositions) + getDataLength(u32View, map.particlePositions)));
 
 })();
