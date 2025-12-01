@@ -20,17 +20,6 @@ const SimpleModel = (() => {
     const u8View = new Uint8Array(buffer);
     const u32View = new Uint32Array(buffer);
 
-    // The header itself is a metadata entry that describes the metadata segment
-    // It should consume the same number of elements as any metadata entry.
-    // This simplifies the indexing arithmetic.
-    u32View[0] = 3; // metadata offset or metadata entry length
-    u32View[1] = 3; // number of metadata entries including the header entry
-    // u32View[2] = 0; // unused
-
-    setEntry(u32View, map.particleLifetimes, 1, 10, 0);
-    setEntry(u32View, map.particlePositions, 4, 10, 0);
-    calculateDataOffsets(u32View);
-
     // * Each metadata entry has 3 properties:
     // dataOffset - The offset of the data in typed units
     // dataLength - The length of the data in logical elements
@@ -84,10 +73,21 @@ const SimpleModel = (() => {
         for (let index = 0; index < count; index++) {
             f32View[particlePositionsDataOffset + index] = Number(Math.random() * 10).toFixed(2);
             u8View[particleLifetimesDataOffset + index] = Math.floor(Math.random() * 255);
-            u32View[particleLifetimesMetaOffset + 2] ++;
-            u32View[particlePositionsMetaOffset + 2] ++;
+            u32View[particleLifetimesMetaOffset + 2]++;
+            u32View[particlePositionsMetaOffset + 2]++;
         }
     }
+
+    // The header itself is a metadata entry that describes the metadata segment
+    // It should consume the same number of elements as any metadata entry.
+    // This simplifies the indexing arithmetic.
+    u32View[0] = 3; // metadata offset or metadata entry length
+    u32View[1] = 3; // number of metadata entries including the header entry
+    // u32View[2] = 0; // unused
+
+    setEntry(u32View, map.particleLifetimes, 1, 10, 0);
+    setEntry(u32View, map.particlePositions, 4, 10, 0);
+    calculateDataOffsets(u32View);
 
     populateParticles(map, u32View, u8View, f32View, 10);
 
