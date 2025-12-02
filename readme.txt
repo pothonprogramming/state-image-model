@@ -11,6 +11,14 @@ Different array views may be used to read different types of data.
 For simplicity, all metadata properties may be stored as Uint32 values.
 
 The buffer structure might look like this: Header | Metadata | Data
+Alternatively, the header could be omitted from the buffer and hard coded into the program.
+
+A basic header might look like this:
+
+entryLength: Describes the length of an individual metadata entry in logical units
+entryCount:  Describes the number of metadata entries in the metadata segment
+
+With the above information, the program would know how to traverse metadata entries.
 
 A basic metadata entry might look like this:
 
