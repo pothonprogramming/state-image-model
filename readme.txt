@@ -3,32 +3,3 @@ State Image Model
 The goal of this project is to present a reasonable way to represent an application's state
 in the form of a contiguous array buffer that can be used at runtime as well as be serialized
 to a binary file for later use.
-
-Using a byte buffer is a simple way to represent memory in most programming languages. 
-The buffer may have a small header, a metadata segment, and a data segment.
-Accessing data requires use of the metadata, so there is some overhead with this approach.
-Different array views may be used to read different types of data.
-For simplicity, all metadata properties may be stored as Uint32 values.
-
-The buffer structure might look like this: Header | Metadata | Data
-Alternatively, the header could be omitted from the buffer and hard coded into the program.
-
-A basic header might look like this:
-
-entryLength: Describes the length of an individual metadata entry in logical units
-entryCount:  Describes the number of metadata entries in the metadata segment
-
-With the above information, the program would know how to traverse metadata entries.
-
-A basic metadata entry might look like this:
-
-dataOffset: Used by the typed view to access the first data element
-dataLength: Used by the typed view to access the last data element relative to the dataOffset
-
-Optional properties
-
-id:         Used to find and identify the metadata entry and optionally infer type
-parentId:   Used to build relationships between metadata entries
-dataType:   Used to determine which typed view to use for data access if type is not inferred from id
-dataStride: The size of a single data entry in bytes, including any padding
-dataCount:  Used to determine how many data elements are actively being used (for data pools)
