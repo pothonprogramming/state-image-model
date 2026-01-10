@@ -17,7 +17,7 @@ const SimpleModel = (() => {
 
     function render(positions, colors, length) {
         for (let index1 = 0, index2 = 0; index1 < length; index1++, index2 += 2) {
-            Raster.fillAxisAlignedRectangle(DISPLAY_PIXELS, DISPLAY_WIDTH, positions[index2], positions[index2 + 1], 1, 1, colors[index1]);
+            Raster.fillAxisAlignedRectangle(DISPLAY_PIXELS, DISPLAY_WIDTH, PureMath.floor(positions[index2]), PureMath.floor(positions[index2 + 1]), 1, 1, colors[index1]);
         }
     }
 
@@ -33,6 +33,16 @@ const SimpleModel = (() => {
         return (x >>> 0) * PureMath.inverseUInt32;
     }
 
+    function randomColor(seed, index) {
+        let x = seed ^ index;
+        x ^= x >>> 16;
+        x = PureMath.integer32Multiply(x, 0x7feb352d);
+        x ^= x >>> 15;
+        x = PureMath.integer32Multiply(x, 0x846ca68b);
+        x ^= x >>> 16;
+        return (x >>> 0);
+    }
+
     return {
         getDisplayHeight: () => DISPLAY_HEIGHT,
         getDisplayWidth: () => DISPLAY_WIDTH,
@@ -45,7 +55,7 @@ const SimpleModel = (() => {
             const cursor = Buffer.createCursor(buffer, 0);
             particlePool = Particle.createPool(cursor, 2000);
             for (var i = 0; i < 2000; i++) {
-                Particle.add(particlePool, PureMath.floor(random01(randomSeed, randomIndex++) * DISPLAY_WIDTH), PureMath.floor(random01(randomSeed, randomIndex++) * DISPLAY_HEIGHT), random01(randomSeed, randomIndex++) - 0.5, random01(randomSeed, randomIndex++) - 0.5, 0xffff9090);
+                Particle.add(particlePool, PureMath.floor(random01(randomSeed, randomIndex++) * DISPLAY_WIDTH), PureMath.floor(random01(randomSeed, randomIndex++) * DISPLAY_HEIGHT), random01(randomSeed, randomIndex++) - 0.5, random01(randomSeed, randomIndex++) - 0.5, randomColor(randomSeed, randomIndex++));
 
             }
         },
