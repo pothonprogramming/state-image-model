@@ -10,6 +10,9 @@
         }
 
         body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             height: 100%;
             width: 100%;
         }
@@ -17,6 +20,13 @@
         html {
             height: 100%;
             width: 100%;
+        }
+
+        canvas {
+            image-rendering: pixelated;
+            aspect-ratio: 1 / 1;
+            width: min(100vw, 100vh);
+            height: auto;
         }
     </style>
 </head>

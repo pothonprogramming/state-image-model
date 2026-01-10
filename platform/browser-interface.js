@@ -1,14 +1,21 @@
 (() => {
 
+    function handleAnimationFrameRequest(timeStamp) {
+        if (SimpleModel.update(timeStamp)) if (SimpleModel.render()) render();
+
+        animmationFrameRequestId = window.requestAnimationFrame(handleAnimationFrameRequest);
+        //window.cancelAnimationFrame(animmationFrameRequestId);
+    }
+
     function handleWindowResize(event) {
         const windowInnerWidth = event.target.innerWidth;
         const windowInnerHeight = event.target.innerHeight;
 
         canvasContext2D.imageSmoothingEnabled = false;
 
-        canvas.style.position = "fixed";
-        canvas.style.left = Math.floor((windowInnerWidth - canvas.width) * 0.5) + "px";
-        canvas.style.top = Math.floor((windowInnerHeight - canvas.height) * 0.5) + "px";
+        //canvas.style.position = "fixed";
+        //canvas.style.left = 0; // Math.floor((windowInnerWidth - canvas.width) * 0.5) + "px";
+        //canvas.style.top = Math.floor((windowInnerHeight - canvas.height) * 0.5) + "px";
 
         resetImageData();
 
@@ -34,10 +41,14 @@
     let displayView; // The typed array view that holds the raw pixel data
     let imageData; // The ImageData object that will be used to draw the pixel data to the canvas
 
+    SimpleModel.initialize(Math.random() * 1000);
+
     resetImageData();
 
     document.body.appendChild(canvas);
     window.addEventListener("resize", handleWindowResize);
     window.dispatchEvent(new Event("resize"));
+
+    animationFrameRequestId = window.requestAnimationFrame(handleAnimationFrameRequest);
 
 })()
