@@ -7,15 +7,33 @@
         //window.cancelAnimationFrame(animmationFrameRequestId);
     }
 
+    function handleMouseDownOrMouseUp(event) {
+        SimpleModel.setMousePosition(Math.floor(event.clientX - canvasRectangle.left), Math.floor(event.clientY - canvasRectangle.top));
+        const mouseDown = event.type === "mousedown";
+        switch (event.button) {
+            case 0:
+                SimpleModel.setMouseLeft(mouseDown);
+                break;
+            case 2:
+                SimpleModel.setMouseRight(mouseDown);
+                break;
+        }
+    }
+
+    function handleMouseMove(event) {
+        const scale = canvasRectangle.width / SimpleModel.getDisplayWidth();
+        const mouse_x = Math.floor((event.clientX - canvasRectangle.left) / scale);
+        const mouse_y = Math.floor((event.clientY - canvasRectangle.top) / scale);
+        SimpleModel.setMousePosition(mouse_x, mouse_y);
+    }
+
     function handleWindowResize(event) {
         const windowInnerWidth = event.target.innerWidth;
         const windowInnerHeight = event.target.innerHeight;
 
         canvasContext2D.imageSmoothingEnabled = false;
 
-        //canvas.style.position = "fixed";
-        //canvas.style.left = 0; // Math.floor((windowInnerWidth - canvas.width) * 0.5) + "px";
-        //canvas.style.top = Math.floor((windowInnerHeight - canvas.height) * 0.5) + "px";
+        canvasRectangle = canvas.getBoundingClientRect();
 
         resetImageData();
 
@@ -38,6 +56,8 @@
     const canvasContext2D = canvas.getContext("2d");
     canvasContext2D.imageSmoothingEnabled = false;
 
+    let canvasRectangle = canvas.getBoundingClientRect();
+
     let displayView; // The typed array view that holds the raw pixel data
     let imageData; // The ImageData object that will be used to draw the pixel data to the canvas
 
@@ -46,6 +66,8 @@
     resetImageData();
 
     document.body.appendChild(canvas);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseDownOrMouseUp);
     window.addEventListener("resize", handleWindowResize);
     window.dispatchEvent(new Event("resize"));
 
