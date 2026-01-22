@@ -61,7 +61,22 @@ const Particle = {
             }
         }
     },
-    move(pool) {
+    force(pool, x, y) {
+        const length2 = pool.count[0] * 2;
+        const positions = pool.positions;
+        const vectors = pool.vectors;
+        for (let xIndex = 0; xIndex < length2; xIndex += 2) {
+            const yIndex = xIndex + 1;
+            const distanceX = positions[xIndex] - x;
+            const distanceY = positions[yIndex] - y;
+            const distanceSquared = distanceX * distanceX + distanceY * distanceY;
+            const forceX = (distanceX * 0.25)/distanceSquared;
+            const forceY = (distanceY * 0.25)/distanceSquared;
+            vectors[xIndex] += forceX;
+            vectors[yIndex] += forceY
+        }
+    },
+    move(pool, gravity, friction) {
         const length2 = pool.count[0] * 2;
         const positions = pool.positions;
         const vectors = pool.vectors;
@@ -69,6 +84,9 @@ const Particle = {
             const yIndex = xIndex + 1;
             positions[xIndex] += vectors[xIndex];
             positions[yIndex] += vectors[yIndex];
+            vectors[xIndex] *= friction;
+            vectors[yIndex] *= friction;
+            vectors[yIndex] += gravity;
         }
     },
 };
