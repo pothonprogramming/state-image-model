@@ -2,6 +2,33 @@
 // Color values are expected to be stored as AABBGGRR.
 
 const Raster = {
+    fillCircle(pixels, raster_width, circle_x, circle_y, circle_radius, color) {
+        const box_bottom = PureMath.ceiling(circle_y + circle_radius);
+        const box_left = PureMath.floor(circle_x - circle_radius);
+        const box_right = PureMath.ceiling(circle_x + circle_radius);
+        const box_top = PureMath.floor(circle_y - circle_radius);
+
+        const circleRadiusSquared = circle_radius * circle_radius;
+
+        // Set up the first index and row step.
+        let index = box_top * raster_width + box_left;
+        const indexYStep = raster_width - box_right + box_left;
+
+        // You could also break these loops into different quadrants and draw one quadrant at a time.
+        // This would get rid of the pixelEdge branches, but it would also lead to a lot of duplicate code. Not sure which is better.
+        for (let y = box_top; y < box_bottom; y++) {
+            const pixelEdgeY = y < circle_y ? y + 1 : y; // Test the edge that has the least magnitude along the vector
+            const vector_y = pixelEdgeY - circle_y;
+            const vectorYSquared = vector_y * vector_y;
+            for (let x = box_left; x < box_right; x++) {
+                const pixelEdgeX = x < circle_x ? x + 1 : x; // Test the edge that has the least magnitude along the vector
+                const vector_x = pixelEdgeX - circle_x;
+                if (vector_x * vector_x + vectorYSquared < circleRadiusSquared) pixels[index] = color;
+                index++;
+            }
+            index += indexYStep;
+        }
+    },
     fillAxisAlignedRectangle(raster_pixels, raster_width, rectangle_left, rectangle_top, rectangle_width, rectangle_height, color) {
         const bottom = PureMath.ceiling(rectangle_top + rectangle_height); // Expand edges to draw all pixels that overlap the rectangle
         const left = PureMath.floor(rectangle_left);
@@ -19,7 +46,6 @@ const Raster = {
             index += indexYStep;
         }
     },
-    
     fillTransparentAxisAlignedRectangle(raster_pixels, raster_width, rectangle_left, rectangle_top, rectangle_width, rectangle_height, color) {
         const bottom = PureMath.ceiling(rectangle_top + rectangle_height); // Expand edges to draw all pixels that overlap the rectangle
         const left = PureMath.floor(rectangle_left);
